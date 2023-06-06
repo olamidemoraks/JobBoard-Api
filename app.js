@@ -26,7 +26,6 @@ app.use(morgan("common"));
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(xss());
-app.use(cors(corOptions));
 app.use(bodyParser.json({ limit: "30mb", extended: "true" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: "true" }));
 app.use(cookieParser(process.env.JWT_SECRET));
@@ -39,6 +38,7 @@ app.use(
   express.static(path.join(__dirname, "public/assets/profile"))
 );
 app.use("/document", express.static(path.join(__dirname, "public/document")));
+app.use(cors(corOptions));
 
 app.get("/", (req, res) => {
   res.status(200).send("Up and running");

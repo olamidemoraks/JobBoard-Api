@@ -16,12 +16,16 @@ const jobSchema = new mongoose.Schema(
     Contact: {
       type: String,
     },
+    Country: {
+      type: String,
+    },
     Title: {
       type: String,
       required: [true, "Provide Job title"],
     },
     Description: {
       type: String,
+      required: [true, "Provide Job title"],
     },
     CompanyName: {
       type: String,

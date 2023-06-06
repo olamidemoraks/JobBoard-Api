@@ -4,14 +4,17 @@ const { isTokenValid } = require("../utils/jwt");
 
 const authenticateUser = (req, res, next) => {
   try {
-    // const headerAuth = req.headers.authorization;
-    // console.log(headerAuth);
-    // if (!headerAuth && headerAuth.startsWith("Bearer")) {
-    //   throw new customError.UnauthenticatedError("Authentication Error");
-    // }
+    let token;
+    // token = req.signedCookies.token;
 
-    // const token = headerAuth.split(" ")[1];
-    const token = req.signedCookies.token;
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      console.log("header", authHeader);
+      if (!authHeader && authHeader.startsWith("Bearer")) {
+        throw new customError.UnauthenticatedError("Authentication Invalid");
+      }
+      token = authHeader.split(" ")[1];
+    }
     if (!token)
       throw new customError.UnauthenticatedError("Authentication Error");
     const isCustomAuth = token.length < 500;
