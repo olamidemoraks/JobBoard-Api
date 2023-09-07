@@ -22,7 +22,6 @@ const CompanyScheme = new mongoose.Schema({
   },
   Location: {
     type: String,
-    required: true,
   },
   Title: { type: String },
 
