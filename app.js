@@ -18,13 +18,10 @@ const companyRouter = require("./routes/companyRoute");
 const jobRouter = require("./routes/jobsRoute");
 const savedRouter = require("./routes/savedRoute");
 const overviewRouter = require("./routes/overviewRoute");
-const { authenticateUser } = require("./middleware/authentication");
 
 const app = express();
 
 app.use(morgan("common"));
-app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(xss());
 app.use(bodyParser.json({ limit: "30mb", extended: "true" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: "true" }));
@@ -38,6 +35,9 @@ app.use(
   express.static(path.join(__dirname, "public/assets/profile"))
 );
 app.use("/document", express.static(path.join(__dirname, "public/document")));
+
+app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(cors(corOptions));
 
 app.get("/", (req, res) => {
@@ -50,8 +50,8 @@ app.get("/api/v1/resume/:name", (req, res) => {
 });
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/company", companyRouter);
-app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/seeker", seekerRouter);
+app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/saved", savedRouter);
 app.use("/api/v1/overview", overviewRouter);
 

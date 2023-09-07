@@ -1,4 +1,6 @@
 const express = require("express");
+// const cors = require("cors");
+// const corOptions = require("../config/corOptions");
 const {
   createCompany,
   getCompany,
@@ -18,6 +20,8 @@ const { authenticateUser } = require("../middleware/authentication");
 const { companyUpload } = require("../utils/fileStorage");
 
 const router = express.Router();
+
+// router.use(cors(corOptions));
 
 router
   .route("/")
