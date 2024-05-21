@@ -2,6 +2,9 @@ const Job = require("../models/Job");
 const Company = require("../models/Company");
 const customCode = require("../errors");
 const { StatusCodes } = require("http-status-codes");
+const { getFeatureJob, getFeatureJobs } = require("../utils/featureApiQuery");
+const { convertFeatureJobData, converter } = require("../utils/featureJobData");
+const mongoose = require("mongoose");
 
 const getJobs = async (req, res) => {
   const {
@@ -15,6 +18,7 @@ const getJobs = async (req, res) => {
     Address,
   } = req.query;
   let queryObj = {};
+
   if (isRemote) {
     queryObj.isRemote = "true" ? true : false;
   }
@@ -71,20 +75,33 @@ const getJobs = async (req, res) => {
         CompanySize: company[0].CompanySize,
         Logo: company[0].Logo,
         CompanyDesc: company[0].CompanyDesc,
+        isFeatured: false,
       };
     })
   );
-  res.status(StatusCodes.OK).json(jobWithCompany);
+
+  const featureJob = await getFeatureJobs({});
+  const featureJobConvert = await convertFeatureJobData(featureJob);
+
+  res.status(StatusCodes.OK).json([...jobWithCompany, ...featureJobConvert]);
 };
 
 const getJob = async (req, res) => {
   const { id } = req.params;
-  const job = await Job.findById({ _id: id });
-  if (!job) {
-    throw new customCode.NotFoundError(`Job with ${id} does not exist`);
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    const job = await Job.findById({ _id: id });
+    if (!job) {
+      throw new customCode.NotFoundError(`Job with ${id} does not exist`);
+    }
+    res.status(StatusCodes.OK).json(job);
+  } else {
+    const featureJob = await getFeatureJob({ id });
+    const job = await convertFeatureJobData(featureJob);
+    if (!job[0]) {
+      throw new customCode.NotFoundError(`Job with ${id} does not exist`);
+    }
+    res.status(StatusCodes.OK).json({ ...job?.[0] });
   }
-
-  res.status(StatusCodes.OK).json(job);
 };
 
 module.exports = {

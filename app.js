@@ -26,6 +26,7 @@ app.use(xss());
 app.use(bodyParser.json({ limit: "30mb", extended: "true" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: "true" }));
 app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cors(corOptions));
 app.use(
   "/company",
   express.static(path.join(__dirname, "public/assets/company"))
@@ -38,7 +39,6 @@ app.use("/document", express.static(path.join(__dirname, "public/document")));
 
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(cors(corOptions));
 
 app.get("/", (req, res) => {
   res.status(200).send("Up and running");
