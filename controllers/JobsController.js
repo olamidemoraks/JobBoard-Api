@@ -80,7 +80,10 @@ const getJobs = async (req, res) => {
     })
   );
 
-  const featureJob = await getFeatureJobs({});
+  const featureJob = await getFeatureJobs({
+    remote_jobs_only: isRemote ? isRemote : false,
+    query: Title ? Title : "developer",
+  });
   const featureJobConvert = await convertFeatureJobData(featureJob);
 
   res.status(StatusCodes.OK).json([...jobWithCompany, ...featureJobConvert]);

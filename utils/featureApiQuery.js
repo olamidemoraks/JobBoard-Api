@@ -8,6 +8,7 @@ const getFeatureJobs = async ({
   job_titles,
   employment_types,
 }) => {
+  console.log({ query, remote_jobs_only });
   try {
     const options = {
       method: "GET",
