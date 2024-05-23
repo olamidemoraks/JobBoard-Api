@@ -1,5 +1,6 @@
 const Job = require("../models/Job");
 const Company = require("../models/Company");
+const ApiQuota = require("../models/ApiQuota");
 const customCode = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 const { getFeatureJob, getFeatureJobs } = require("../utils/featureApiQuery");
@@ -16,6 +17,7 @@ const getJobs = async (req, res) => {
     EmploymentType,
     Skills,
     Address,
+    page,
   } = req.query;
   let queryObj = {};
 
@@ -65,7 +67,11 @@ const getJobs = async (req, res) => {
     ...queryObj,
   });
 
-  const jobs = await query;
+  const pageNo = Number(page) || 1;
+  const limit = 8;
+  const skip = (pageNo - 1) * limit;
+
+  const jobs = await query.limit(limit).skip(skip);
 
   const jobWithCompany = await Promise.all(
     jobs.map(async (job) => {
@@ -80,10 +86,48 @@ const getJobs = async (req, res) => {
     })
   );
 
-  const featureJob = await getFeatureJobs({
+  // for Rapid api Jsearch job
+  // switch between our rapid api account when a quota has been exhusted
+  console.log({ value: await ApiQuota.count() });
+  if ((await ApiQuota.count()) === 0) {
+    await ApiQuota.create({ quotaType: 1 });
+  }
+
+  const allQuota = await ApiQuota.find({});
+  const quota = allQuota?.[0];
+  let quotaType = quota.quotaType;
+
+  console.log({ quota });
+  let featureJob;
+
+  featureJob = await getFeatureJobs({
     remote_jobs_only: isRemote ? isRemote : false,
     query: Title ? Title : "developer",
+    type: quotaType,
+    page: page,
   });
+
+  if (featureJob.length < 1) {
+    for (i = 0; i < 4; i++) {
+      quotaType++;
+      if (quotaType === 4) {
+        quotaType = 1;
+      }
+
+      featureJob = await getFeatureJobs({
+        remote_jobs_only: isRemote ? isRemote : false,
+        query: Title ? Title : "developer",
+        type: quotaType,
+        page: page,
+      });
+
+      if (featureJob.length > 1) {
+        await ApiQuota.findByIdAndUpdate(quota._id, { quotaType });
+        break;
+      }
+    }
+  }
+
   const featureJobConvert = await convertFeatureJobData(featureJob);
 
   res.status(StatusCodes.OK).json([...jobWithCompany, ...featureJobConvert]);
@@ -98,7 +142,10 @@ const getJob = async (req, res) => {
     }
     res.status(StatusCodes.OK).json(job);
   } else {
-    const featureJob = await getFeatureJob({ id });
+    const allQuota = await ApiQuota.find({});
+    const quota = allQuota?.[0];
+    let quotaType = quota.quotaType;
+    const featureJob = await getFeatureJob({ id, type: quotaType });
     const job = await convertFeatureJobData(featureJob);
     if (!job[0]) {
       throw new customCode.NotFoundError(`Job with ${id} does not exist`);

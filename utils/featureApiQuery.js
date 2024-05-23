@@ -1,5 +1,25 @@
 const axios = require("axios");
 
+const rapidApiEnv = (type) => {
+  switch (type) {
+    case 1:
+      return {
+        key: process.env.RAPID_API_KEY,
+      };
+    case 2:
+      return {
+        key: process.env.RAPID_API_KEY_2nd,
+      };
+    case 3:
+      return {
+        key: process.env.RAPID_API_KEY_3rd,
+      };
+
+    default:
+      break;
+  }
+};
+
 const getFeatureJobs = async ({
   page = 1,
   num_pages = 1,
@@ -7,8 +27,10 @@ const getFeatureJobs = async ({
   remote_jobs_only = false,
   job_titles,
   employment_types,
+  type = 1,
 }) => {
-  console.log({ query, remote_jobs_only });
+  const { key } = rapidApiEnv(type);
+
   try {
     const options = {
       method: "GET",
@@ -22,7 +44,7 @@ const getFeatureJobs = async ({
         employment_types,
       },
       headers: {
-        "X-RapidAPI-Key": process.env.RAPID_API_KEY,
+        "X-RapidAPI-Key": key,
         "X-RapidAPI-Host": process.env.RAPID_API_HOST,
       },
     };
@@ -31,9 +53,12 @@ const getFeatureJobs = async ({
     return response.data?.data;
   } catch (error) {
     console.error(error);
+    return [];
   }
 };
-const getFeatureJob = async ({ id }) => {
+const getFeatureJob = async ({ id, type }) => {
+  const { key } = rapidApiEnv(type);
+
   try {
     const options = {
       method: "GET",
@@ -42,7 +67,7 @@ const getFeatureJob = async ({ id }) => {
         job_id: id,
       },
       headers: {
-        "X-RapidAPI-Key": process.env.RAPID_API_KEY,
+        "X-RapidAPI-Key": key,
         "X-RapidAPI-Host": process.env.RAPID_API_HOST,
       },
     };

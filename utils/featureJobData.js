@@ -1,9 +1,11 @@
 const convertFeatureJobData = async (featureJobs) => {
-  return await Promise.all(
-    featureJobs.map((job) => {
-      return converter(job);
-    })
-  );
+  if (Array.isArray(featureJobs)) {
+    return await Promise.all(
+      featureJobs.map((job) => {
+        return converter(job);
+      })
+    );
+  } else return [];
 };
 
 const converter = (job) => {
