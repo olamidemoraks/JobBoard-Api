@@ -130,7 +130,11 @@ const getJobs = async (req, res) => {
 
   const featureJobConvert = await convertFeatureJobData(featureJob);
 
-  res.status(StatusCodes.OK).json([...jobWithCompany, ...featureJobConvert]);
+  const allJobs = [...jobWithCompany, ...featureJobConvert].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  res.status(StatusCodes.OK).json(allJobs);
 };
 
 const getJob = async (req, res) => {
